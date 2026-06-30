@@ -4,9 +4,13 @@ import com.project.Module2.dto.EmployeeDTO;
 import com.project.Module2.enitities.EmployeeEnitity;
 import com.project.Module2.repositories.EmployeeRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 @Service
 public class EmployeeService {
@@ -18,9 +22,9 @@ public class EmployeeService {
         this.employeeRepository = employeeRepository;
         this.modelMapper = modelMapper;
     }
-    public EmployeeDTO getEmployeeById(Long id){
-        EmployeeEnitity enitity = employeeRepository.findById(id).orElse(null);
-        return modelMapper.map(enitity, EmployeeDTO.class);
+    public Optional<EmployeeDTO> getEmployeeById(Long id){
+        Optional<EmployeeEnitity> enitity = employeeRepository.findById(id);
+        return enitity.map(employeeEnitity -> modelMapper.map(employeeEnitity,EmployeeDTO.class));
     }
 
     public List<EmployeeDTO> getAllEmployees(){
@@ -53,5 +57,26 @@ public class EmployeeService {
             return false;
         employeeRepository.deleteById(employeeId);
         return true;
+    }
+    public  Boolean isExitsByEmployeeId(Long employeeId)
+    {
+        return employeeRepository.existsById(employeeId);
+    }
+
+    public EmployeeDTO updatePartialEmployeeById(Long employeeId, Map<String, Object> updates) {
+
+        Boolean IsExits = isExitsByEmployeeId(employeeId);
+        if(!IsExits)
+            return  null;
+        EmployeeEnitity employeeEnitity = employeeRepository.findById(employeeId).orElse(null);
+        updates.forEach((field,value)->
+                {
+                    Field fieldToUpdated = ReflectionUtils.getRequiredField(EmployeeEnitity.class , field);
+                    fieldToUpdated.setAccessible(true);
+                    ReflectionUtils.setField(fieldToUpdated , employeeEnitity , value);
+                }
+                );
+        return modelMapper.map(employeeRepository.save(employeeEnitity) , EmployeeDTO.class);
+
     }
 }
