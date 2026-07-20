@@ -2,6 +2,7 @@ package com.project.Module2.services;
 
 import com.project.Module2.dto.EmployeeDTO;
 import com.project.Module2.enitities.EmployeeEnitity;
+import com.project.Module2.exceptions.ResourceNotFoundException;
 import com.project.Module2.repositories.EmployeeRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.util.ReflectionUtils;
@@ -44,6 +45,9 @@ public class EmployeeService {
     }
 
     public EmployeeDTO updateEmployeeById(Long employeeId, EmployeeDTO employeeDTO) {
+
+        Boolean IsExits = isExitsByEmployeeId(employeeId);
+        if(!IsExits) throw new ResourceNotFoundException("Employee not found with id : "+ employeeId);
 
         EmployeeEnitity enitity = modelMapper.map(employeeDTO , EmployeeEnitity.class);
         enitity.setId(employeeId);

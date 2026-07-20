@@ -31,5 +31,8 @@ public class EmployeeEnitity {
 
     private Boolean isActive;
 
+    private Integer salary;
+
+    private String role;
 
 }

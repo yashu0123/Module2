@@ -1,16 +1,15 @@
 package com.project.Module2.controllers;
 
 import com.project.Module2.dto.EmployeeDTO;
+import com.project.Module2.exceptions.ResourceNotFoundException;
 import com.project.Module2.services.EmployeeService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 public class EmployeeControllers {
@@ -20,12 +19,11 @@ public class EmployeeControllers {
         this.employeeService = employeeService;
     }
     @GetMapping("/employee/{Id}")
-    public ResponseEntity<EmployeeDTO> getEmployeeDetails(@PathVariable(required = false) Long Id){
+    public ResponseEntity<EmployeeDTO> getEmployeeDetails(@PathVariable(required = false) Long Id) {
         Optional<EmployeeDTO> employeeDTO =  employeeService.getEmployeeById(Id);
         return employeeDTO
                 .map(employeeDTO1 -> ResponseEntity.ok(employeeDTO1))
-                .orElse(ResponseEntity.notFound().build());
-
+                .orElseThrow(()-> new ResourceNotFoundException("Employee Not Found with id : "+Id));
 
     }
     @GetMapping("/employee")
@@ -36,8 +34,8 @@ public class EmployeeControllers {
         return ResponseEntity.ok(employees);
 
     }
-    @PostMapping
-    public  ResponseEntity<EmployeeDTO> createNewEmployee(@RequestBody EmployeeDTO  employeeEnitity){
+    @PostMapping()
+    public  ResponseEntity<EmployeeDTO> createNewEmployee(@RequestBody @Valid EmployeeDTO  employeeEnitity){
         EmployeeDTO saved = employeeService.createNewEmployee(employeeEnitity);
         return new  ResponseEntity<>(saved ,HttpStatus.CREATED);
     }
